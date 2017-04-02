@@ -1,19 +1,20 @@
 package com.example.goranminov.popmovies;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.example.goranminov.popmovies.utilities.MovieDatabaseJsonUtils;
+import com.example.goranminov.popmovies.utilities.NetworkUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,12 +27,12 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
-    /*
-     * I have followed the examples from the Sunshine app that was provided during my Nanodegree course.
-     * I have followed the AsyncTask class the documentation on android.developer Website
-     * as well as the AsyncTask class from the Sunshine app.
-     */
+
+/*
+ * I have followed the examples from the Sunshine app that was provided during my Nanodegree course.
+ * I have followed the AsyncTask class the documentation on android.developer Website
+ * as well as the AsyncTask class from the Sunshine app.
+ */
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler {
 
     private RecyclerView mRecyclerView;
@@ -134,64 +135,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
      */
     public class GetMovieData extends AsyncTask<String, Void, String[]> {
 
-        /**
-         * Take the String representing the complete details in JSON format and
-         * pull out the data we need to construct the Strings needed.
-         *
-         * @param stringMovies String representing the complete details in JSON format.
-         *
-         * @return Strings needed for the wireframes.
-         */
-        private String[] getMovieDataFromJson(String stringMovies) throws JSONException {
-
-            /*
-             * The names of the JSON objects that we need to extract.
-             */
-            final String MDB_RESULTS = "results";
-            final String MDB_ORIGINAL_TITLE = "original_title";
-            final String MDB_POSTER_PATH = "poster_path";
-            final String MDB_OVERVIEW = "overview";
-            final String MDB_VOTE_AVERAGE = "vote_average";
-            final String MDB_RELEASE_DATE = "release_date";
-
-            /*
-             * Object from the returned string and use that Object to create an Array from
-             * the parent MDB_RESULTS.
-             */
-            JSONObject moviesResultJsonObject = new JSONObject(stringMovies);
-            JSONArray moviesResultJsonArray = moviesResultJsonObject.getJSONArray(MDB_RESULTS);
-
-            /*
-             * The String Array to be returned.
-             */
-            String[] resultString = new String[20];
-
-            for (int i = 0; i < moviesResultJsonArray.length(); i++) {
-                String originalTitle;
-                String posterPath;
-                String overview;
-                String voteAverage;
-                String releaseDate;
-
-                /*
-                 * Get the JSONObject.
-                 */
-                JSONObject moviesResults = moviesResultJsonArray.getJSONObject(i);
-                originalTitle = moviesResults.getString(MDB_ORIGINAL_TITLE);
-                posterPath = moviesResults.getString(MDB_POSTER_PATH);
-                overview = moviesResults.getString(MDB_OVERVIEW);
-                voteAverage = moviesResults.getString(MDB_VOTE_AVERAGE);
-                releaseDate = moviesResults.getString(MDB_RELEASE_DATE);
-
-                /* This is implemented this way so that will be easy when we will need
-                 * to extract the data later.
-                 */
-                resultString[i] = posterPath + "!" + originalTitle + "@"
-                        + overview + "#" + voteAverage +
-                        "£" + releaseDate;
-            }
-            return resultString;
-        }
 
         /*
          * Set the ProgressBar to be visible to indicate the user that we are
@@ -207,91 +150,26 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         protected String[] doInBackground(String... params) {
 
 
-             // If there is no params there is nothing to look up.
+            // If there is no params there is nothing to look up.
             if (params.length == 0) {
                 return null;
             }
-
-            /*
-             * These two need to be declared outside the try/catch
-             * so that they can be closed in the finally block.
-             */
-            HttpURLConnection urlConnection = null;
-            BufferedReader bufferedReader = null;
-
-            // Will contain the raw JSON response as a string.
-            String moviesJsonString = null;
-
-            try {
-
                 /*
                  * Construct the URL for the TheMovieDB query.
                  * Possible parameters are available at TMDB's API page.
                  */
-                final String MDB_BASE_URL = "http://api.themoviedb.org/3/movie/";
-                final String APPID_PARAM = "api_key";
-                Uri builtUri = Uri.parse(MDB_BASE_URL).buildUpon()
-                        .appendPath(params[0])
-                        .appendQueryParameter(APPID_PARAM, BuildConfig.MOVIE_DATABASE_API_KEY)
-                        .build();
+            URL url = NetworkUtils.buildUrl(params[0]);
 
-                URL url = new URL(builtUri.toString());
-
-                // Create the request to theMovieDB, and open the connection.
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String.
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer stringBuffer = new StringBuffer();
-
-                if (inputStream == null) {
-
-                    // Nothing to do.
-                    return null;
-                }
-
-                bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    stringBuffer.append(line + "\n");
-                }
-                if (stringBuffer.length() == 0) {
-
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-
-                moviesJsonString = stringBuffer.toString();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-
-                /* If the code didn't successfully get the data, there's no point in attemping
-                 * to parse it.
-                 */
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (bufferedReader != null) {
-                    try {
-                        bufferedReader.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
             try {
-                return getMovieDataFromJson(moviesJsonString);
+                String moviesJsonString = NetworkUtils.getResponseFromHttpUrl(url);
+                String[] movieData = MovieDatabaseJsonUtils.getMovieDataFromJson(MainActivity.this,
+                        moviesJsonString);
+                return movieData;
             } catch (JSONException e) {
                 e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
             }
             return null;
         }
