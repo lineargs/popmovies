@@ -1,9 +1,14 @@
 package com.example.goranminov.popmovies;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
@@ -33,12 +38,16 @@ import java.net.URL;
  * I have followed the AsyncTask class the documentation on android.developer Website
  * as well as the AsyncTask class from the Sunshine app.
  */
-public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler,
+        LoaderManager.LoaderCallbacks<String[]>,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
     private TextView mErrorMessage;
     private ProgressBar mLoadingData;
+    private static final int MOVIE_DATABASE_LOADER_ID = 29;
+    private static boolean PREFERENCE_HAVE_BEEN_UPDATED = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,27 +86,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         mMovieAdapter = new MovieAdapter(this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
-        /*
-         * Call our loadPopularMovies method.
-         */
-        loadPopularMovies();
+        LoaderManager.LoaderCallbacks<String[]> callbacks = MainActivity.this;
+        Bundle bundle = null;
+        getSupportLoaderManager().initLoader(MOVIE_DATABASE_LOADER_ID, bundle, callbacks);
 
-    }
-
-    /*
-     * Method used to get the movies data. The preffered sorting is set to be popular.
-     */
-    private void loadPopularMovies() {
-        showMovieData();
-        new GetMovieData().execute("popular");
-    }
-
-    /*
-     * Method used to get the movies data with the top_rated sorting.
-     */
-    private void loadTopRatedMovies() {
-        showMovieData();
-        new GetMovieData().execute("top_rated");
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
     }
 
     /*
@@ -130,63 +124,83 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         startActivity(intent);
     }
 
-    /*
-     * Class used to perform network requests, extends AsyncTask
-     */
-    public class GetMovieData extends AsyncTask<String, Void, String[]> {
+    @Override
+    public Loader<String[]> onCreateLoader(int id, final Bundle args) {
 
+        return new AsyncTaskLoader<String[]>(this) {
 
-        /*
-         * Set the ProgressBar to be visible to indicate the user that we are
-         * loading the data.
-         */
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mLoadingData.setVisibility(View.VISIBLE);
-        }
+            String[] mMovieData = null;
 
-        @Override
-        protected String[] doInBackground(String... params) {
-
-
-            // If there is no params there is nothing to look up.
-            if (params.length == 0) {
-                return null;
+            @Override
+            protected void onStartLoading() {
+                if (mMovieData != null) {
+                    deliverResult(mMovieData);
+                } else {
+                    mLoadingData.setVisibility(View.VISIBLE);
+                    forceLoad();
+                }
             }
-                /*
-                 * Construct the URL for the TheMovieDB query.
-                 * Possible parameters are available at TMDB's API page.
-                 */
-            URL url = NetworkUtils.buildUrl(params[0]);
 
-            try {
-                String moviesJsonString = NetworkUtils.getResponseFromHttpUrl(url);
-                String[] movieData = MovieDatabaseJsonUtils.getMovieDataFromJson(MainActivity.this,
-                        moviesJsonString);
-                return movieData;
-            } catch (JSONException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-            return null;
-        }
+            @Override
+            public String[] loadInBackground() {
+                SharedPreferences sharedPreferences = android.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+                String sortingQuery = sharedPreferences.getString(getString(R.string.pref_sort_key),
+                        getString(R.string.pref_sort_popular_label));
+                URL url = NetworkUtils.buildUrl(sortingQuery);
 
-        @Override
-        protected void onPostExecute(String[] strings) {
-            /*
-             * Set the ProgressBar to invisible and pass the data to the Adapter.
-             */
-            mLoadingData.setVisibility(View.INVISIBLE);
-            if (strings != null) {
-                showMovieData();
-                mMovieAdapter.setMovieData(strings);
-            } else {
-                showErrorData();
+                try {
+                    String moviesJsonString = NetworkUtils.getResponseFromHttpUrl(url);
+                    String[] movieData = MovieDatabaseJsonUtils.getMovieDataFromJson(MainActivity.this,
+                            moviesJsonString);
+                    return movieData;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
             }
+
+            public void deliverResult(String[] data) {
+                mMovieData = data;
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<String[]> loader, String[] data) {
+        mLoadingData.setVisibility(View.INVISIBLE);
+        mMovieAdapter.setMovieData(data);
+        if (data == null) {
+            showErrorData();
+            mMovieAdapter.setMovieData(data);
+        } else {
+            showMovieData();
         }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<String[]> loader) {
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (PREFERENCE_HAVE_BEEN_UPDATED) {
+            getSupportLoaderManager().restartLoader(MOVIE_DATABASE_LOADER_ID, null, this);
+            PREFERENCE_HAVE_BEEN_UPDATED = false;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        PREFERENCE_HAVE_BEEN_UPDATED = true;
     }
 
     @Override
