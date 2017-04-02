@@ -9,31 +9,31 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-public class DetailActivity extends AppCompatActivity {
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
-    private TextView mMovieTitle;
-    private TextView mMovieOverview;
-    private TextView mMovieVoteAverage;
-    private TextView mMovieReleaseDate;
-    private ImageView mMoviePoster;
+public class DetailActivity extends AppCompatActivity {
+    /*
+     * Butterknife is a popular View "injection" library for Android.
+     * Automatically finds each field by the specified ID.
+     */
+    @BindView(R.id.movie_title) TextView mMovieTitle;
+    @BindView(R.id.movie_overview) TextView mMovieOverview;
+    @BindView(R.id.movie_vote_average) TextView mMovieVoteAverage;
+    @BindView(R.id.movie_release_date) TextView mMovieReleaseDate;
+    @BindView(R.id.movie_poster_detail_activity) ImageView mMoviePoster;
+
     //String used to get the data from the intent.
     private String mMovieDetails;
-    final String MDB_BASE = "http://image.tmdb.org/t/p/w185/";
+    private static final String MDB_BASE = "http://image.tmdb.org/t/p/w185/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-        /*
-         * We get the references to our TextViews and ImageView so we can later
-         * display the data.
-         */
-        mMovieTitle =(TextView) findViewById(R.id.movie_title);
-        mMovieOverview = (TextView) findViewById(R.id.movie_overview);
-        mMovieVoteAverage = (TextView) findViewById(R.id.movie_vote_average);
-        mMovieReleaseDate = (TextView) findViewById(R.id.movie_release_date);
-        mMoviePoster = (ImageView) findViewById(R.id.movie_poster_detail_activity);
+
+        ButterKnife.bind(this);
         Intent intent = getIntent();
         //If there is intent
         if (intent != null) {

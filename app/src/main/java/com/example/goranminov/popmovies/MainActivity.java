@@ -2,6 +2,8 @@ package com.example.goranminov.popmovies;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -11,6 +13,7 @@ import android.os.Bundle;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,16 +24,6 @@ import android.widget.TextView;
 import com.example.goranminov.popmovies.utilities.MovieDatabaseJsonUtils;
 import com.example.goranminov.popmovies.utilities.NetworkUtils;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /*
@@ -76,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
          * We attach GridLayoutManager to our RecyclerView as we need to display our results
          * in Grid style.
          */
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, numberOfColumns());
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setHasFixedSize(true);
 
@@ -92,6 +85,25 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
+    }
+
+    private int numberOfColumns() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int widthDivider = 600;
+        int width = displayMetrics.widthPixels;
+        int nColumns = width / widthDivider;
+        if (nColumns < 2) {
+            return 2;
+        }
+        return nColumns;
+    }
+
+    private boolean isOnline() {
+        ConnectivityManager connectivityManager = (ConnectivityManager)
+                getSystemService(this.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
 
     /*
@@ -135,9 +147,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             protected void onStartLoading() {
                 if (mMovieData != null) {
                     deliverResult(mMovieData);
-                } else {
+                } else if (isOnline()){
                     mLoadingData.setVisibility(View.VISIBLE);
                     forceLoad();
+                } else {
+                    showErrorData();
                 }
             }
 
@@ -147,14 +161,18 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
                 String sortingQuery = sharedPreferences.getString(getString(R.string.pref_sort_key),
                         getString(R.string.pref_sort_popular_label));
                 URL url = NetworkUtils.buildUrl(sortingQuery);
-
-                try {
-                    String moviesJsonString = NetworkUtils.getResponseFromHttpUrl(url);
-                    String[] movieData = MovieDatabaseJsonUtils.getMovieDataFromJson(MainActivity.this,
-                            moviesJsonString);
-                    return movieData;
-                } catch (Exception e) {
-                    e.printStackTrace();
+                if (isOnline()) {
+                    try {
+                        String moviesJsonString = NetworkUtils.getResponseFromHttpUrl(url);
+                        String[] movieData = MovieDatabaseJsonUtils.getMovieDataFromJson(MainActivity.this,
+                                moviesJsonString);
+                        return movieData;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                } else {
+                    mErrorMessage.setText("No Internet Connection");
                     return null;
                 }
             }
