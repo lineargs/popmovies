@@ -203,24 +203,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        /*
-         * Clear the data in the Adapter and load it again.
-         */
-        if (id == R.id.action_popular) {
-            mMovieAdapter.setMovieData(null);
-            loadPopularMovies();
-            return true;
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         }
-
-        /*
-         * Clear the data in the Adapter and load it again.
-         */
-        if (id == R.id.action_top_rated) {
-            mMovieAdapter.setMovieData(null);
-            loadTopRatedMovies();
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 }
