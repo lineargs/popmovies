@@ -30,12 +30,12 @@ import java.net.URL;
  * I have followed the AsyncTask class the documentation on android.developer Website
  * as well as the AsyncTask class from the Sunshine app.
  */
-public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler,
+public class MainActivity extends AppCompatActivity implements MoviesPosterAdapter.MovieAdapterOnClickHandler,
         LoaderManager.LoaderCallbacks<String[]>,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     private RecyclerView mRecyclerView;
-    private MovieAdapter mMovieAdapter;
+    private MoviesPosterAdapter mMovieAdapter;
     private TextView mErrorMessage;
     private ProgressBar mLoadingData;
     private static final int MOVIE_DATABASE_LOADER_ID = 29;
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         /*
          * We get the reference to our RecyclerView so we can later attach the adapter.
          */
-        mRecyclerView = (RecyclerView) findViewById(R.id.movies_data_recycler_view);
+        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movies_poster);
 
         /*
          * We get the reference to our Error Message TextView so we can display the
@@ -73,9 +73,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         mRecyclerView.setHasFixedSize(true);
 
         /*
-         * The MovieAdapter is responsible to attach our data and display it.
+         * The MoviesPosterAdapter is responsible to attach our data and display it.
          */
-        mMovieAdapter = new MovieAdapter(this);
+        mMovieAdapter = new MoviesPosterAdapter(this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
         LoaderManager.LoaderCallbacks<String[]> callbacks = MainActivity.this;

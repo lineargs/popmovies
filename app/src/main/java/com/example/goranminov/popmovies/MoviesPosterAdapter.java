@@ -2,7 +2,6 @@ package com.example.goranminov.popmovies;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +18,7 @@ import com.squareup.picasso.Picasso;
  * Created by goranminov on 26/03/2017.
  */
 
-public class MovieAdapter  extends RecyclerView.Adapter<MovieAdapter.MovieAdapterViewHolder>{
+public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapter.MovieAdapterViewHolder>{
 
     final String MDB_BASE = "http://image.tmdb.org/t/p/w185/";
     private String[] mMovieData;
@@ -35,11 +34,11 @@ public class MovieAdapter  extends RecyclerView.Adapter<MovieAdapter.MovieAdapte
     }
 
     /**
-     * Creates a MovieAdapter.
+     * Creates a MoviesPosterAdapter.
      *
      * @param movieAdapterOnClickHandler The onClick handler for this adapter.
      */
-    public MovieAdapter(MovieAdapterOnClickHandler movieAdapterOnClickHandler) {
+    public MoviesPosterAdapter(MovieAdapterOnClickHandler movieAdapterOnClickHandler) {
         this.movieAdapterOnClickHandler = movieAdapterOnClickHandler;
     }
 
@@ -124,7 +123,7 @@ public class MovieAdapter  extends RecyclerView.Adapter<MovieAdapter.MovieAdapte
     }
 
     /**
-     * This method is used to set the movie data on a MovieAdapter if we've already
+     * This method is used to set the movie data on a MoviesPosterAdapter if we've already
      * created one.
      *
      * @param movieData The new movie data to be displayed.
