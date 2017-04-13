@@ -18,7 +18,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.goranminov.popmovies.data.MoviePreferences;
@@ -69,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements MoviesPosterAdapt
         /*
          * The MoviesPosterAdapter is responsible to attach our data and display it.
          */
-        mMovieAdapter = new MoviesPosterAdapter(this);
+        mMovieAdapter = new MoviesPosterAdapter(this, this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
         LoaderManager.LoaderCallbacks<String[]> callbacks = MainActivity.this;
@@ -144,14 +143,11 @@ public class MainActivity extends AppCompatActivity implements MoviesPosterAdapt
 
             @Override
             public String[] loadInBackground() {
-                //SharedPreferences sharedPreferences = android.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
-                //String sortingQuery = sharedPreferences.getString(getString(R.string.pref_sort_key),
-                // getString(R.string.pref_sort_popular_label));
                 String sortingQuery = MoviePreferences.getPreferredSortBy(MainActivity.this);
-                URL url = NetworkUtils.buildUrl(sortingQuery);
+                URL url = NetworkUtils.buildMainUrl(sortingQuery);
                 try {
-                    String moviesJsonString = NetworkUtils.getResponseFromHttpUrl(url);
-                    String[] movieData = MovieDatabaseJsonUtils.getMovieDataFromJson(MainActivity.this,
+                    String moviesJsonString = NetworkUtils.getMainResponseFromHttpUrl(url);
+                    String[] movieData = MovieDatabaseJsonUtils.getMovieIdFromJson(MainActivity.this,
                             moviesJsonString);
                     return movieData;
                 } catch (Exception e) {
@@ -170,10 +166,10 @@ public class MainActivity extends AppCompatActivity implements MoviesPosterAdapt
     @Override
     public void onLoadFinished(Loader<String[]> loader, String[] data) {
         mLoadingData.setVisibility(View.INVISIBLE);
-        mMovieAdapter.setMovieData(data);
+        mMovieAdapter.setMoviesData(data);
         if (data == null) {
             showErrorData();
-            mMovieAdapter.setMovieData(data);
+            mMovieAdapter.setMoviesData(data);
         }
     }
 

@@ -1,12 +1,14 @@
 package com.example.goranminov.popmovies;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.example.goranminov.popmovies.utilities.PopMoviesUtils;
 import com.squareup.picasso.Picasso;
 
     /*
@@ -20,13 +22,13 @@ import com.squareup.picasso.Picasso;
 
 public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapter.MovieAdapterViewHolder>{
 
-    final String MDB_BASE = "http://image.tmdb.org/t/p/w185/";
-    private String[] mMovieData;
+    private String[] mMoviesData;
 
     /* And onClick handler to make it easy for an Activity to interface
      * with our RecyclerView.
      */
     private final MovieAdapterOnClickHandler movieAdapterOnClickHandler;
+    private final Context mContext;
 
     //The interface that receives onClick messages.
     public interface MovieAdapterOnClickHandler {
@@ -38,7 +40,8 @@ public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapte
      *
      * @param movieAdapterOnClickHandler The onClick handler for this adapter.
      */
-    public MoviesPosterAdapter(MovieAdapterOnClickHandler movieAdapterOnClickHandler) {
+    public MoviesPosterAdapter(@NonNull Context context, MovieAdapterOnClickHandler movieAdapterOnClickHandler) {
+        mContext = context;
         this.movieAdapterOnClickHandler = movieAdapterOnClickHandler;
     }
 
@@ -62,7 +65,7 @@ public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapte
         @Override
         public void onClick(View v) {
             int adapterPosition = getAdapterPosition();
-            String selectedMovie = mMovieData[adapterPosition];
+            String selectedMovie = mMoviesData[adapterPosition];
             movieAdapterOnClickHandler.onClick(selectedMovie);
         }
     }
@@ -77,11 +80,10 @@ public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapte
      */
     @Override
     public MovieAdapterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
-        int layoutListItem = R.layout.movies_list_item;
-        LayoutInflater inflater = LayoutInflater.from(context);
-        boolean shouldAttach = false;
-        View view = inflater.inflate(layoutListItem, parent, shouldAttach);
+
+        View view = LayoutInflater
+                .from(mContext)
+                .inflate(R.layout.movies_list_item, parent, false);
         return new MovieAdapterViewHolder(view);
     }
 
@@ -95,13 +97,12 @@ public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapte
      */
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
-        String selectedMovie = mMovieData[position];
-        selectedMovie = MDB_BASE + selectedMovie.substring(0, selectedMovie.indexOf("!"));
+        String selectedMoviePosterPath = PopMoviesUtils.posterPath(mMoviesData[position]);
 
         /* We use Picasso to handle image loading, we trigger the URL asynchronously
          * into the ImageView.
          */
-        Picasso.with(holder.mPosterImageView.getContext()).load(selectedMovie)
+        Picasso.with(holder.mPosterImageView.getContext()).load(selectedMoviePosterPath)
                 .placeholder(R.drawable.placeholder)
                 .centerInside()
                 .fit()
@@ -116,20 +117,20 @@ public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapte
      */
     @Override
     public int getItemCount() {
-        if (mMovieData == null) {
+        if (mMoviesData == null) {
             return 0;
         }
-        return mMovieData.length;
+        return mMoviesData.length;
     }
 
     /**
      * This method is used to set the movie data on a MoviesPosterAdapter if we've already
      * created one.
      *
-     * @param movieData The new movie data to be displayed.
+     * @param moviesData The new movie data to be displayed.
      */
-    public void setMovieData(String[] movieData) {
-        mMovieData = movieData;
+    public void setMoviesData(String[] moviesData) {
+        mMoviesData = moviesData;
         notifyDataSetChanged();
     }
 }

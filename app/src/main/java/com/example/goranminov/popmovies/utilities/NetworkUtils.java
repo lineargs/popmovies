@@ -21,7 +21,7 @@ public class NetworkUtils {
     private static final String MDB_BASE_URL = "http://api.themoviedb.org/3/movie/";
     private static final String APPID_PARAM = "api_key";
 
-    public static URL buildUrl(String sortingQuery) {
+    public static URL buildMainUrl(String sortingQuery) {
         Uri builtUri = Uri.parse(MDB_BASE_URL).buildUpon()
                 .appendPath(sortingQuery)
                 .appendQueryParameter(APPID_PARAM, BuildConfig.MOVIE_DATABASE_API_KEY)
@@ -37,7 +37,21 @@ public class NetworkUtils {
         return url;
     }
 
-    public static String getResponseFromHttpUrl(URL url) {
+    public static URL buildDetailUrl(String movieId) {
+        Uri builtUri = Uri.parse(MDB_BASE_URL).buildUpon()
+                .appendPath(movieId)
+                .appendQueryParameter(APPID_PARAM, BuildConfig.MOVIE_DATABASE_API_KEY)
+                .build();
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return url;
+    }
+
+    public static String getMainResponseFromHttpUrl(URL url) {
         /*
              * These two need to be declared outside the try/catch
              * so that they can be closed in the finally block.

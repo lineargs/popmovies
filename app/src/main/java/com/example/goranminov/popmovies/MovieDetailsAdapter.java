@@ -1,16 +1,15 @@
 package com.example.goranminov.popmovies;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.goranminov.popmovies.utilities.PopMoviesUtils;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -21,11 +20,11 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
 
     private static final int VIEW_TYPE_OVERVIEW = 0;
     private static final int VIEW_TYPE_TRAILER = 1;
-    final String MDB_BASE = "http://image.tmdb.org/t/p/w185/";
+    private final Context mContext;
     private String[] mMovieData;
 
-    public MovieDetailsAdapter(@NonNull String[] data) {
-        mMovieData = data;
+    public MovieDetailsAdapter(@NonNull Context context) {
+        mContext = context;
     }
 
     /*
@@ -87,18 +86,20 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
      */
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
-        int viewType = getItemViewType(position);
-        String movieDetails = mMovieData[position];
-        String moviePath = MDB_BASE + movieDetails.substring(0, movieDetails.indexOf("!"));
+        String moviePath = PopMoviesUtils.posterPath(mMovieData[position]);
 
-        /* We use Picasso to handle image loading, we trigger the URL asynchronously
-         * into the ImageView.
-         */
         Picasso.with(holder.mPosterImageView.getContext()).load(moviePath)
                 .placeholder(R.drawable.placeholder)
                 .centerInside()
                 .fit()
                 .into(holder.mPosterImageView);
+        /*int viewType = getItemViewType(position);
+        String movieDetails = mMovieData[position];
+
+        *//* We use Picasso to handle image loading, we trigger the URL asynchronously
+         * into the ImageView.
+         *//*
+
 
         String movieTitle = movieDetails.substring(movieDetails.indexOf("!") + 1, movieDetails.indexOf("@"));
         holder.mMovieTitle.setText(movieTitle);
@@ -108,7 +109,7 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
         holder.mMovieVoteAverage.setText(movieVoteAverage);
         String movieReleaseDate = movieDetails.substring(movieDetails.indexOf("#") + 1, movieDetails.length() - 1);
         movieReleaseDate = movieReleaseDate.substring(movieReleaseDate.indexOf("£") + 1, movieReleaseDate.indexOf("-"));
-        holder.mMovieReleaseDate.setText(movieReleaseDate);
+        holder.mMovieReleaseDate.setText(movieReleaseDate);*/
 
 
     }
@@ -122,7 +123,13 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
     public int getItemCount() {
         if (mMovieData == null) {
             return 0;
+        } else {
+            return mMovieData.length;
         }
-        return mMovieData.length;
+    }
+
+    public void setMovieData(String[] movieData) {
+        mMovieData = movieData;
+        notifyDataSetChanged();
     }
 }
