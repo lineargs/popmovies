@@ -19,7 +19,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.goranminov.popmovies.data.MoviePreferences;
 import com.example.goranminov.popmovies.utilities.MovieDatabaseJsonUtils;
 import com.example.goranminov.popmovies.utilities.NetworkUtils;
 
@@ -36,7 +38,6 @@ public class MainActivity extends AppCompatActivity implements MoviesPosterAdapt
 
     private RecyclerView mRecyclerView;
     private MoviesPosterAdapter mMovieAdapter;
-    private TextView mErrorMessage;
     private ProgressBar mLoadingData;
     private static final int MOVIE_DATABASE_LOADER_ID = 29;
     private static boolean PREFERENCE_HAVE_BEEN_UPDATED = false;
@@ -50,13 +51,6 @@ public class MainActivity extends AppCompatActivity implements MoviesPosterAdapt
          * We get the reference to our RecyclerView so we can later attach the adapter.
          */
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movies_poster);
-
-        /*
-         * We get the reference to our Error Message TextView so we can display the
-         * error message in case there is a problem to retrieve the data from
-         * the Movie Database website
-         */
-        mErrorMessage = (TextView) findViewById(R.id.error_message);
 
         /*
          * We get the reference to our ProgressBar so we will indicate to the user that we are
@@ -106,21 +100,15 @@ public class MainActivity extends AppCompatActivity implements MoviesPosterAdapt
     }
 
     /*
-     * Method used to set the error message as invisible and the RecyclerView
-     * as visible.
-     */
-    private void showMovieData() {
-        mErrorMessage.setVisibility(View.INVISIBLE);
-        mRecyclerView.setVisibility(View.VISIBLE);
-    }
-
-    /*
      * Method used to set the error message as visible and the RecyclerView
      * as invisible.
      */
     private void showErrorData() {
-        mErrorMessage.setVisibility(View.VISIBLE);
-        mRecyclerView.setVisibility(View.INVISIBLE);
+        Toast.makeText(MainActivity.this, R.string.error_message_display, Toast.LENGTH_LONG).show();
+    }
+
+    private void notOnlineData() {
+        Toast.makeText(MainActivity.this, R.string.not_online_error_message_display, Toast.LENGTH_LONG).show();
     }
 
     /**
@@ -146,32 +134,28 @@ public class MainActivity extends AppCompatActivity implements MoviesPosterAdapt
             protected void onStartLoading() {
                 if (mMovieData != null) {
                     deliverResult(mMovieData);
-                } else if (isOnline()){
+                } else if (isOnline()) {
                     mLoadingData.setVisibility(View.VISIBLE);
                     forceLoad();
                 } else {
-                    showErrorData();
+                    notOnlineData();
                 }
             }
 
             @Override
             public String[] loadInBackground() {
-                SharedPreferences sharedPreferences = android.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
-                String sortingQuery = sharedPreferences.getString(getString(R.string.pref_sort_key),
-                        getString(R.string.pref_sort_popular_label));
+                //SharedPreferences sharedPreferences = android.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+                //String sortingQuery = sharedPreferences.getString(getString(R.string.pref_sort_key),
+                // getString(R.string.pref_sort_popular_label));
+                String sortingQuery = MoviePreferences.getPreferredSortBy(MainActivity.this);
                 URL url = NetworkUtils.buildUrl(sortingQuery);
-                if (isOnline()) {
-                    try {
-                        String moviesJsonString = NetworkUtils.getResponseFromHttpUrl(url);
-                        String[] movieData = MovieDatabaseJsonUtils.getMovieDataFromJson(MainActivity.this,
-                                moviesJsonString);
-                        return movieData;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                } else {
-                    mErrorMessage.setText("No Internet Connection");
+                try {
+                    String moviesJsonString = NetworkUtils.getResponseFromHttpUrl(url);
+                    String[] movieData = MovieDatabaseJsonUtils.getMovieDataFromJson(MainActivity.this,
+                            moviesJsonString);
+                    return movieData;
+                } catch (Exception e) {
+                    e.printStackTrace();
                     return null;
                 }
             }
@@ -190,8 +174,6 @@ public class MainActivity extends AppCompatActivity implements MoviesPosterAdapt
         if (data == null) {
             showErrorData();
             mMovieAdapter.setMovieData(data);
-        } else {
-            showMovieData();
         }
     }
 

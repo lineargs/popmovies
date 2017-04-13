@@ -59,7 +59,7 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
     @Override
     public MovieAdapterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
-        /*int layoutId = 0;
+        int layoutId;
         switch (viewType) {
             case VIEW_TYPE_OVERVIEW: {
                 layoutId = R.layout.detail_activity_movie;
@@ -71,7 +71,7 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
 
             default:
                 throw new IllegalArgumentException("Invalid view type, value of " + viewType);
-        }*/
+        }
         View view = LayoutInflater.from(context).inflate(R.layout.detail_activity_movie, parent, false);
         //view.setFocusable(true);
         return new MovieAdapterViewHolder(view);

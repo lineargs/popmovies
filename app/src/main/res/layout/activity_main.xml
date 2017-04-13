@@ -10,14 +10,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="vertical"/>
-    <TextView
-        android:id="@+id/error_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/padding_16"
-        android:textSize="22sp"
-        android:text="@string/error_message_display"
-        android:visibility="invisible" />
     <ProgressBar
         android:id="@+id/loading_data_progress_bar"
         android:layout_width="@dimen/padding_42"

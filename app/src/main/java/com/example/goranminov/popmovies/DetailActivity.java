@@ -53,34 +53,4 @@ public class DetailActivity extends AppCompatActivity {
             mRecyclerView.setAdapter(movieDetailsAdapter);
         }
     }
-
-    private void parsePassedData() {
-
-        /*
-         * Here came handy why we have used different symbols while we were creating the String Array
-         * from the JSONObject.
-         *
-         * We extract the substrings and we passed the information to their TextView and ImageView.
-         */
-        String moviePath = MDB_BASE + mMovieDetails.substring(0, mMovieDetails.indexOf("!"));
-
-        /* We use Picasso to handle image loading, we trigger the URL asynchronously
-         * into the ImageView.
-         */
-        Picasso.with(getApplicationContext()).load(moviePath)
-                .placeholder(R.drawable.placeholder)
-                .centerInside()
-                .fit()
-                .into(mDetailBinding.movieInfo.moviePosterDetailActivity);
-        String movieTitle = mMovieDetails.substring(mMovieDetails.indexOf("!") + 1, mMovieDetails.indexOf("@"));
-        mDetailBinding.movieInfo.movieTitle.setText(movieTitle);
-        String movieOverview = mMovieDetails.substring(mMovieDetails.indexOf("@") + 1, mMovieDetails.indexOf("#"));
-        mDetailBinding.movieInfo.movieOverview.setText(movieOverview);
-        String movieVoteAverage = mMovieDetails.substring(mMovieDetails.indexOf("#") + 1, mMovieDetails.indexOf("£"));
-        mDetailBinding.movieInfo.movieVoteAverage.setText(movieVoteAverage + "/10");
-        String movieReleaseDate = mMovieDetails.substring(mMovieDetails.indexOf("#") + 1, mMovieDetails.length() - 1);
-        movieReleaseDate = movieReleaseDate.substring(movieReleaseDate.indexOf("£") + 1, movieReleaseDate.indexOf("-"));
-        mDetailBinding.movieInfo.movieReleaseDate.setText(movieReleaseDate);
-
-    }
 }
