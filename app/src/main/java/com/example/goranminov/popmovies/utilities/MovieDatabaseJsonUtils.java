@@ -56,7 +56,7 @@ public class MovieDatabaseJsonUtils {
                 /* This is implemented this way so that will be easy when we will need
                  * to extract the data later.
                  */
-            resultString[i] = posterPath + "-" + movieId;
+            resultString[i] = posterPath + "£" + movieId;
         }
         return resultString;
     }
@@ -105,9 +105,9 @@ public class MovieDatabaseJsonUtils {
                 /* This is implemented this way so that will be easy when we will need
                  * to extract the data later.
                  */
-            resultString[0] = posterPath + "-" + movieId + "-" + originalTitle + "-"
-                    + overview + "-" + voteAverage +
-                    "-" + releaseDate;
+            resultString[0] = posterPath + "£" + movieId + "!" + originalTitle + "@"
+                    + overview + "#" + voteAverage +
+                    "$" + releaseDate;
         return resultString;
     }
 }

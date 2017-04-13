@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.goranminov.popmovies.databinding.ActivityDetailBinding;
 import com.example.goranminov.popmovies.utilities.MovieDatabaseJsonUtils;
@@ -45,7 +46,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
 
                 //We put the passed data into the created String
                 mMovieDetails = intent.getStringExtra(Intent.EXTRA_TEXT);
-                movieIdFromIntent = mMovieDetails.substring(mMovieDetails.indexOf("-") + 1,
+                movieIdFromIntent = mMovieDetails.substring(mMovieDetails.indexOf("£") + 1,
                         mMovieDetails.length());
             }
 
@@ -102,6 +103,10 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     public void onLoadFinished(Loader<String[]> loader, String[] data) {
         movieDetailsAdapter.setMovieData(data);
+        if (data == null) {
+            Toast.makeText(DetailActivity.this, R.string.error_message_display, Toast.LENGTH_LONG).show();
+            movieDetailsAdapter.setMovieData(data);
+        }
     }
 
     @Override

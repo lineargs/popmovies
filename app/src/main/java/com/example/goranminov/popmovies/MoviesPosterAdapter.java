@@ -3,6 +3,7 @@ package com.example.goranminov.popmovies;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -98,7 +99,6 @@ public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapte
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
         String selectedMoviePosterPath = PopMoviesUtils.posterPath(mMoviesData[position]);
-
         /* We use Picasso to handle image loading, we trigger the URL asynchronously
          * into the ImageView.
          */

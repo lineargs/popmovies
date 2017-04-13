@@ -3,6 +3,7 @@ package com.example.goranminov.popmovies;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,14 +65,11 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
                 layoutId = R.layout.detail_activity_movie;
                 break;
             }
-            case VIEW_TYPE_TRAILER: {
-                break;
-            }
 
             default:
                 throw new IllegalArgumentException("Invalid view type, value of " + viewType);
         }
-        View view = LayoutInflater.from(context).inflate(R.layout.detail_activity_movie, parent, false);
+        View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
         //view.setFocusable(true);
         return new MovieAdapterViewHolder(view);
     }
@@ -86,32 +84,20 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
      */
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
-        String moviePath = PopMoviesUtils.posterPath(mMovieData[position]);
 
-        Picasso.with(holder.mPosterImageView.getContext()).load(moviePath)
+        /* We use Picasso to handle image loading, we trigger the URL asynchronously
+         * into the ImageView.
+         */
+        Picasso.with(holder.mPosterImageView.getContext())
+                .load(PopMoviesUtils.posterPath(mMovieData[position]))
                 .placeholder(R.drawable.placeholder)
                 .centerInside()
                 .fit()
                 .into(holder.mPosterImageView);
-        /*int viewType = getItemViewType(position);
-        String movieDetails = mMovieData[position];
-
-        *//* We use Picasso to handle image loading, we trigger the URL asynchronously
-         * into the ImageView.
-         *//*
-
-
-        String movieTitle = movieDetails.substring(movieDetails.indexOf("!") + 1, movieDetails.indexOf("@"));
-        holder.mMovieTitle.setText(movieTitle);
-        String movieOverview = movieDetails.substring(movieDetails.indexOf("@") + 1, movieDetails.indexOf("#"));
-        holder.mMovieOverview.setText(movieOverview);
-        String movieVoteAverage = movieDetails.substring(movieDetails.indexOf("#") + 1, movieDetails.indexOf("£"));
-        holder.mMovieVoteAverage.setText(movieVoteAverage);
-        String movieReleaseDate = movieDetails.substring(movieDetails.indexOf("#") + 1, movieDetails.length() - 1);
-        movieReleaseDate = movieReleaseDate.substring(movieReleaseDate.indexOf("£") + 1, movieReleaseDate.indexOf("-"));
-        holder.mMovieReleaseDate.setText(movieReleaseDate);*/
-
-
+        holder.mMovieTitle.setText(PopMoviesUtils.movieTitle(mMovieData[position]));
+        holder.mMovieOverview.setText(PopMoviesUtils.movieOverview(mMovieData[position]));
+        holder.mMovieVoteAverage.setText(PopMoviesUtils.movieAverageVote(mMovieData[position]));
+        holder.mMovieReleaseDate.setText(PopMoviesUtils.movieReleasedDate(mMovieData[position]));
     }
 
     /**
