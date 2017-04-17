@@ -24,9 +24,10 @@ public final class MovieDatabaseJsonUtils {
     private static final String MDB_MOVIE_ID = "id";
     private static final String MDB_BACKDROP_PATH = "backdrop_path";
 
-    private static final String MDB_YOUTUBE_RESULTS = "youtube";
-    private static final String MDB_NAME = "name";
-    private static final String MDB_SOURCE = "source";
+    private static final String MDB_TRAILER_MOVIE_ID = "id";
+    private static final String MDB_TRAILER_NAME = "name";
+    private static final String MDB_TRAILER_TYPE = "type";
+    private static final String MDB_TRAILER_SOURCE = "source";
 
     /**
      * Take the String representing the complete details in JSON format and
@@ -55,7 +56,7 @@ public final class MovieDatabaseJsonUtils {
             JSONObject movieJsonObject = jsonMovieOverviewArray.getJSONObject(i);
             voteAverage = movieJsonObject.getDouble(MDB_VOTE_AVERAGE);
             releaseDate = PopMoviesUtils.getNormalizedReleasedDate(movieJsonObject.getString(MDB_RELEASE_DATE));
-            posterPath = movieJsonObject.getString(MDB_POSTER_PATH);
+            posterPath = PopMoviesUtils.getPosterPath(movieJsonObject.getString(MDB_POSTER_PATH));
             backdropPath = movieJsonObject.getString(MDB_BACKDROP_PATH);
             originalTitle = movieJsonObject.getString(MDB_ORIGINAL_TITLE);
             movieId = movieJsonObject.getInt(MDB_MOVIE_ID);
@@ -73,21 +74,21 @@ public final class MovieDatabaseJsonUtils {
         return movieOverviewContentValues;
     }
 
-    public static String[] getMovieTrailersFromJson (Context context, String stringMovie) throws JSONException {
-
-        JSONObject movieResultsJsonObject = new JSONObject(stringMovie);
-        JSONArray movieResultsJsonArray = movieResultsJsonObject.getJSONArray(MDB_YOUTUBE_RESULTS);
-        String[] resultString = new String[movieResultsJsonArray.length()];
-
-        for (int i = 0; i < movieResultsJsonArray.length(); i++) {
-            String source;
-            String name;
-
-            JSONObject movieResults = movieResultsJsonArray.getJSONObject(i);
-                name = movieResults.getString(MDB_NAME);
-                source = movieResults.getString(MDB_SOURCE);
-                resultString[i] = name + "£" + source;
-            }
-        return resultString;
-    }
+//    public static String[] getMovieTrailersFromJson (Context context, String stringMovie) throws JSONException {
+//
+//        JSONObject movieResultsJsonObject = new JSONObject(stringMovie);
+//        JSONArray movieResultsJsonArray = movieResultsJsonObject.getJSONArray(MDB_YOUTUBE_RESULTS);
+//        String[] resultString = new String[movieResultsJsonArray.length()];
+//
+//        for (int i = 0; i < movieResultsJsonArray.length(); i++) {
+//            String source;
+//            String name;
+//
+//            JSONObject movieResults = movieResultsJsonArray.getJSONObject(i);
+//                name = movieResults.getString(MDB_NAME);
+//                source = movieResults.getString(MDB_SOURCE);
+//                resultString[i] = name + "£" + source;
+//            }
+//        return resultString;
+//    }
 }

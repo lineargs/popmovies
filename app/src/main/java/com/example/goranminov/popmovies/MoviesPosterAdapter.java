@@ -107,8 +107,7 @@ public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapte
         /* We use Picasso to handle image loading, we trigger the URL asynchronously
          * into the ImageView.
          */
-        Picasso.with(holder.mPosterImageView.getContext()).load(
-                PopMoviesUtils.getPosterPath(mCursor.getString(MainActivity.INDEX_MOVIE_POSTER_PATH)))
+        Picasso.with(holder.mPosterImageView.getContext()).load(mCursor.getString(MainActivity.INDEX_MOVIE_POSTER_PATH))
                 .placeholder(R.drawable.placeholder)
                 .centerInside()
                 .fit()

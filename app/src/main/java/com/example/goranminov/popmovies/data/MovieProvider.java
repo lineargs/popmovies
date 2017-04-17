@@ -51,13 +51,12 @@ public class MovieProvider extends ContentProvider {
 
         switch (sUriMatcher.match(uri)) {
             case CODE_MOVIES_WITH_ID:
-                String idString = uri.getLastPathSegment();
-                Log.v("ID: ", idString);
-                String[] selectionArguments = new String[]{idString};
+                String idMovie = uri.getLastPathSegment();
+                String[] selectionArgumentsMovie = new String[]{idMovie};
                 retCursor = sqLiteDatabase.query(PopularMoviesContract.MovieOverview.TABLE_NAME,
                         projection,
                         PopularMoviesContract.MovieOverview.COLUMN_MOVIE_ID + " = ? ",
-                        selectionArguments,
+                        selectionArgumentsMovie,
                         null,
                         null,
                         sortOrder);
@@ -67,6 +66,17 @@ public class MovieProvider extends ContentProvider {
                         projection,
                         selection,
                         selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            case CODE_TRAILER_WITH_ID:
+                String idTrailer = uri.getLastPathSegment();
+                String[] selectionArgumentsTrailer = new String[]{idTrailer};
+                retCursor = sqLiteDatabase.query(PopularMoviesContract.MovieTrailer.TABLE_NAME,
+                        projection,
+                        PopularMoviesContract.MovieTrailer.COLUMN_MOVIE_ID + " = ? ",
+                        selectionArgumentsTrailer,
                         null,
                         null,
                         sortOrder);
@@ -81,7 +91,7 @@ public class MovieProvider extends ContentProvider {
 
     @Override
     public String getType(@NonNull Uri uri) {
-        throw new RuntimeException("Not yet implemented");
+        throw new RuntimeException("We are not implementing getType.");
     }
 
     @Override
@@ -91,13 +101,13 @@ public class MovieProvider extends ContentProvider {
         switch (sUriMatcher.match(uri)) {
             case CODE_MOVIES:
                 sqLiteDatabase.beginTransaction();
-                int rowsInserted = 0;
+                int moviesInserted = 0;
                 try {
                     for (ContentValues value : values) {
                         long _id = sqLiteDatabase.insert(PopularMoviesContract.MovieOverview.TABLE_NAME,
                                 null, value);
                         if (_id != -1) {
-                            rowsInserted++;
+                            moviesInserted++;
                         }
                     }
                     sqLiteDatabase.setTransactionSuccessful();
@@ -105,10 +115,30 @@ public class MovieProvider extends ContentProvider {
                     sqLiteDatabase.endTransaction();
                 }
 
-                if (rowsInserted > 0) {
+                if (moviesInserted > 0) {
                     getContext().getContentResolver().notifyChange(uri, null);
                 }
-                return rowsInserted;
+                return moviesInserted;
+            case CODE_TRAILER:
+                sqLiteDatabase.beginTransaction();
+                int trailersInserted = 0;
+                try {
+                    for (ContentValues value : values) {
+                        long _id = sqLiteDatabase.insert(PopularMoviesContract.MovieTrailer.TABLE_NAME,
+                                null, value);
+                        if (_id != -1) {
+                            trailersInserted++;
+                        }
+                    }
+                    sqLiteDatabase.setTransactionSuccessful();
+                } finally {
+                    sqLiteDatabase.endTransaction();
+                }
+
+                if (trailersInserted > 0) {
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+                return trailersInserted;
 
             default:
                 return super.bulkInsert(uri, values);
@@ -117,24 +147,7 @@ public class MovieProvider extends ContentProvider {
 
     @Override
     public Uri insert(@NonNull Uri uri, ContentValues values) {
-        throw new RuntimeException("We are not implementing insert, use BulkInsert instead");
-//        final SQLiteDatabase sqLiteDatabase = mMovieDbHelper.getWritableDatabase();
-//        Uri returnUri;
-//        switch (sUriMatcher.match(uri)) {
-//            case CODE_MOVIES:
-//                long id = sqLiteDatabase.insert(PopularMoviesContract.MovieOverview.TABLE_NAME, null, values);
-//                if (id > 0) {
-//                    returnUri = ContentUris.withAppendedId(PopularMoviesContract.MovieOverview.CONTENT_URI, id);
-//                } else {
-//                    throw new SQLException("Failed to insert row into " + uri);
-//                }
-//                break;
-//
-//            default:
-//                throw new UnsupportedOperationException("Unknown uri: " + uri);
-//        }
-//        getContext().getContentResolver().notifyChange(uri, null);
-//        return returnUri;
+        throw new RuntimeException("We are not implementing insert, use BulkInsert instead.");
     }
 
     @Override
@@ -159,6 +172,6 @@ public class MovieProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        throw new RuntimeException("We are not implementing update.");
+        throw new RuntimeException("Not yet implemented.");
     }
 }

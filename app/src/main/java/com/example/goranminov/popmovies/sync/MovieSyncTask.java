@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 
+import com.example.goranminov.popmovies.MainActivity;
 import com.example.goranminov.popmovies.data.PopularMoviesContract;
 import com.example.goranminov.popmovies.utilities.MovieDatabaseJsonUtils;
 import com.example.goranminov.popmovies.utilities.NetworkUtils;

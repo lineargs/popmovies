@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements MoviesPosterAdapt
 
         getSupportLoaderManager().initLoader(MOVIE_DATABASE_LOADER_ID, null, this);
 
-        MovieSyncUtils.startImmediateSync(this);
+        MovieSyncUtils.initialize(this);
     }
 
     private int numberOfColumns() {

@@ -100,7 +100,7 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
          * into the ImageView.
          */
                 Picasso.with(mContext)
-                        .load(PopMoviesUtils.getPosterPath(mCursor.getString(DetailActivity.INDEX_MOVIE_POSTER_PATH)))
+                        .load(mCursor.getString(DetailActivity.INDEX_MOVIE_POSTER_PATH))
                         .placeholder(R.drawable.placeholder)
                         .centerInside()
                         .fit()

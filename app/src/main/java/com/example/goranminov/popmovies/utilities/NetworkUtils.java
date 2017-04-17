@@ -41,20 +41,6 @@ public class NetworkUtils {
         return url;
     }
 
-    public static URL buildDetailUrl(String movieId) {
-        Uri builtUri = Uri.parse(MDB_BASE_URL).buildUpon()
-                .appendPath(movieId)
-                .appendQueryParameter(APPID_PARAM, BuildConfig.MOVIE_DATABASE_API_KEY)
-                .build();
-        URL url = null;
-        try {
-            url = new URL(builtUri.toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        return url;
-    }
-
     public static URL buildTrailersUrl (String movieId) {
         Uri builtUri = Uri.parse(MDB_BASE_URL).buildUpon()
                 .appendPath(movieId)
