@@ -28,6 +28,14 @@
                 android:value=".MainActivity" />
         </activity>
         <activity android:name=".SettingsActivity"></activity>
+
+        <provider
+            android:authorities="com.example.goranminov.popmovies"
+            android:name=".data.MovieProvider"
+            android:exported="false" />
+
+        <service android:name=".sync.MovieSyncIntentService"
+            android:exported="false" />
     </application>
 
 </manifest>

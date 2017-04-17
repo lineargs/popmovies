@@ -1,112 +1,96 @@
 package com.example.goranminov.popmovies;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.example.goranminov.popmovies.data.PopularMoviesContract;
 import com.example.goranminov.popmovies.utilities.MovieDatabaseJsonUtils;
 import com.example.goranminov.popmovies.utilities.NetworkUtils;
 
 import java.net.URL;
+import java.util.Arrays;
 
-public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<String[]>{
+public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    //String used to get the data from the intent.
-    private String mMovieDetails;
-    private String movieIdFromIntent;
     private MovieDetailsAdapter movieDetailsAdapter;
     private RecyclerView mRecyclerView;
     private static final int MOVIE_INFO_LOADER_ID = 101;
+    private static final int MOVIE_TRAILERS_LOADER_ID = 102;
+    private int mPosition = RecyclerView.NO_POSITION;
+
+    public static final String[] MOVIE_DETAIL_PROJECTION = {
+            PopularMoviesContract.MovieOverview.COLUMN_ORIGINAL_TITLE,
+            PopularMoviesContract.MovieOverview.COLUMN_POSTER_PATH,
+            PopularMoviesContract.MovieOverview.COLUMN_OVERVIEW,
+            PopularMoviesContract.MovieOverview.COLUMN_RELEASE_DATE,
+            PopularMoviesContract.MovieOverview.COLUMN_VOTE_AVERAGE
+    };
+
+    public static final int INDEX_MOVIE_ORIGINAL_TITLE = 0;
+    public static final int INDEX_MOVIE_POSTER_PATH = 1;
+    public static final int INDEX_MOVIE_OVERVIEW = 2;
+    public static final int INDEX_MOVIE_RELEASE_DATE = 3;
+    public static final int INDEX_MOVIE_VOTE_AVERAGE = 4;
+
+    private Uri mUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie);
-        Intent intent = getIntent();
-        //If there is intent
-        if (intent != null) {
+        setContentView(R.layout.activity_detail);
+        mUri = getIntent().getData();
 
-            //And we passed the data
-            if (intent.hasExtra(Intent.EXTRA_TEXT)) {
+        if (mUri == null) {
+            throw new NullPointerException("URI cannot be null.");
+        }
 
-                //We put the passed data into the created String
-                mMovieDetails = intent.getStringExtra(Intent.EXTRA_TEXT);
-                movieIdFromIntent = mMovieDetails.substring(mMovieDetails.indexOf("£") + 1,
-                        mMovieDetails.length());
-            }
+        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movie_details);
+        LinearLayoutManager linearLayoutManager =
+                new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mRecyclerView.setLayoutManager(linearLayoutManager);
+        mRecyclerView.setHasFixedSize(true);
+        movieDetailsAdapter = new MovieDetailsAdapter(this);
+        mRecyclerView.setAdapter(movieDetailsAdapter);
+        getSupportLoaderManager().initLoader(MOVIE_INFO_LOADER_ID, null, this);
+//        getSupportLoaderManager().initLoader(MOVIE_TRAILERS_LOADER_ID, null, this);
+    }
 
-            mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movie_details);
-            LinearLayoutManager linearLayoutManager =
-                    new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-            mRecyclerView.setLayoutManager(linearLayoutManager);
-            mRecyclerView.setHasFixedSize(true);
-            movieDetailsAdapter = new MovieDetailsAdapter(this);
-            mRecyclerView.setAdapter(movieDetailsAdapter);
-            LoaderManager.LoaderCallbacks<String[]> callbacks = DetailActivity.this;
-            Bundle bundle = null;
-            getSupportLoaderManager().initLoader(MOVIE_INFO_LOADER_ID, bundle, callbacks);
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+            case MOVIE_INFO_LOADER_ID:
+                return new CursorLoader(this,
+                        mUri,
+                        MOVIE_DETAIL_PROJECTION,
+                        null,
+                        null,
+                        null);
+
+            default:
+                throw new RuntimeException("Loader Not Implemented: " + id);
         }
     }
 
     @Override
-    public Loader<String[]> onCreateLoader(int id, final Bundle args) {
-        if (id == MOVIE_INFO_LOADER_ID) {
-            return new AsyncTaskLoader<String[]>(this) {
-
-                String[] mMovieData = null;
-
-                @Override
-                protected void onStartLoading() {
-                    if (mMovieData != null) {
-                        deliverResult(mMovieData);
-                    } else {
-                        forceLoad();
-                    }
-                }
-
-                @Override
-                public String[] loadInBackground() {
-                    String movieId = movieIdFromIntent;
-                    URL url = NetworkUtils.buildDetailUrl(movieId);
-                    try {
-                        String movieString = NetworkUtils.getMainResponseFromHttpUrl(url);
-                        String[] movieData = MovieDatabaseJsonUtils.getMovieDetailFromJson(DetailActivity.this,
-                                movieString);
-                        return movieData;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                }
-
-                public void deliverResult(String[] data) {
-                    mMovieData = data;
-                    super.deliverResult(data);
-                }
-            };
-        } else {
-            return null;
-        }
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        movieDetailsAdapter.swapCursor(data);
+        if (mPosition == RecyclerView.NO_POSITION) mPosition = 0;
+        mRecyclerView.smoothScrollToPosition(mPosition);
     }
 
     @Override
-    public void onLoadFinished(Loader<String[]> loader, String[] data) {
-        if (loader.getId() == MOVIE_INFO_LOADER_ID) {
-            movieDetailsAdapter.setMovieData(data);
-        }else if (data == null && loader.getId() == MOVIE_INFO_LOADER_ID) {
-            Toast.makeText(DetailActivity.this, R.string.error_message_display, Toast.LENGTH_LONG).show();
-            movieDetailsAdapter.setMovieData(data);
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<String[]> loader) {
+    public void onLoaderReset(Loader<Cursor> loader) {
 
     }
 }

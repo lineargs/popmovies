@@ -1,6 +1,7 @@
 package com.example.goranminov.popmovies;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -23,18 +24,19 @@ import com.squareup.picasso.Picasso;
 
 public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapter.MovieAdapterViewHolder>{
 
-    private String[] mMoviesData;
-
     /* And onClick handler to make it easy for an Activity to interface
      * with our RecyclerView.
      */
     private final MovieAdapterOnClickHandler movieAdapterOnClickHandler;
     private final Context mContext;
+    private String movieId;
 
     //The interface that receives onClick messages.
     public interface MovieAdapterOnClickHandler {
-        void onClick(String selectedMovie);
+        void onClick(long id);
     }
+
+    private Cursor mCursor;
 
     /**
      * Creates a MoviesPosterAdapter.
@@ -66,8 +68,9 @@ public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapte
         @Override
         public void onClick(View v) {
             int adapterPosition = getAdapterPosition();
-            String selectedMovie = mMoviesData[adapterPosition];
-            movieAdapterOnClickHandler.onClick(selectedMovie);
+            mCursor.moveToPosition(adapterPosition);
+            long id = mCursor.getLong(MainActivity.INDEX_MOVIE_ID);
+            movieAdapterOnClickHandler.onClick(id);
         }
     }
 
@@ -85,6 +88,7 @@ public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapte
         View view = LayoutInflater
                 .from(mContext)
                 .inflate(R.layout.movies_list_item, parent, false);
+        view.setFocusable(true);
         return new MovieAdapterViewHolder(view);
     }
 
@@ -98,11 +102,13 @@ public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapte
      */
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
-        String selectedMoviePosterPath = PopMoviesUtils.posterPath(mMoviesData[position]);
+        mCursor.moveToPosition(position);
+
         /* We use Picasso to handle image loading, we trigger the URL asynchronously
          * into the ImageView.
          */
-        Picasso.with(holder.mPosterImageView.getContext()).load(selectedMoviePosterPath)
+        Picasso.with(holder.mPosterImageView.getContext()).load(
+                PopMoviesUtils.getPosterPath(mCursor.getString(MainActivity.INDEX_MOVIE_POSTER_PATH)))
                 .placeholder(R.drawable.placeholder)
                 .centerInside()
                 .fit()
@@ -117,20 +123,20 @@ public class MoviesPosterAdapter extends RecyclerView.Adapter<MoviesPosterAdapte
      */
     @Override
     public int getItemCount() {
-        if (mMoviesData == null) {
+        if (mCursor == null) {
             return 0;
         }
-        return mMoviesData.length;
+        return mCursor.getCount();
     }
 
     /**
      * This method is used to set the movie data on a MoviesPosterAdapter if we've already
      * created one.
      *
-     * @param moviesData The new movie data to be displayed.
+     * @param newCursor The new movie data to be displayed.
      */
-    public void setMoviesData(String[] moviesData) {
-        mMoviesData = moviesData;
+    public void swapCursor(Cursor newCursor) {
+        mCursor = newCursor;
         notifyDataSetChanged();
     }
 }

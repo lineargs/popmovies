@@ -8,9 +8,8 @@ public final class PopMoviesUtils {
 
     public static final String MDB_BASE = "http://image.tmdb.org/t/p/w185/";
 
-    public static String posterPath (String movieData) {
-        String posterPath = movieData.substring(0, movieData.indexOf("£"));
-        return MDB_BASE + posterPath;
+    public static String getPosterPath(String movieData) {
+        return MDB_BASE + movieData;
     }
 
     public static String getNormalizedReleasedDate (String movieData) {

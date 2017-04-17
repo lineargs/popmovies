@@ -1,6 +1,7 @@
 package com.example.goranminov.popmovies;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -22,10 +23,12 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
     private static final int VIEW_TYPE_OVERVIEW = 0;
     private static final int VIEW_TYPE_TRAILER = 1;
     private final Context mContext;
-    private String[] mMovieData;
+    private boolean mUseOverviewLayout;
+    private Cursor mCursor;
 
     public MovieDetailsAdapter(@NonNull Context context) {
         mContext = context;
+        mUseOverviewLayout = mContext.getResources().getBoolean(R.bool.use_overview_layout);
     }
 
     /*
@@ -58,19 +61,22 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
      */
     @Override
     public MovieAdapterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
         int layoutId;
         switch (viewType) {
             case VIEW_TYPE_OVERVIEW: {
                 layoutId = R.layout.detail_activity_movie;
                 break;
             }
+            case VIEW_TYPE_TRAILER: {
+                layoutId = R.layout.trailer_list_item;
+                break;
+            }
 
             default:
                 throw new IllegalArgumentException("Invalid view type, value of " + viewType);
         }
-        View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
-        //view.setFocusable(true);
+        View view = LayoutInflater.from(mContext).inflate(layoutId, parent, false);
+        view.setFocusable(true);
         return new MovieAdapterViewHolder(view);
     }
 
@@ -84,20 +90,32 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
      */
     @Override
     public void onBindViewHolder(MovieAdapterViewHolder holder, int position) {
+        mCursor.moveToPosition(position);
 
+        int viewType = getItemViewType(position);
+
+        switch (viewType) {
+            case VIEW_TYPE_OVERVIEW:
         /* We use Picasso to handle image loading, we trigger the URL asynchronously
          * into the ImageView.
          */
-        Picasso.with(holder.mPosterImageView.getContext())
-                .load(PopMoviesUtils.posterPath(mMovieData[position]))
-                .placeholder(R.drawable.placeholder)
-                .centerInside()
-                .fit()
-                .into(holder.mPosterImageView);
-        holder.mMovieTitle.setText(PopMoviesUtils.movieTitle(mMovieData[position]));
-        holder.mMovieOverview.setText(PopMoviesUtils.movieOverview(mMovieData[position]));
-        holder.mMovieVoteAverage.setText(PopMoviesUtils.movieAverageVote(mMovieData[position]));
-        holder.mMovieReleaseDate.setText(PopMoviesUtils.movieReleasedDate(mMovieData[position]));
+                Picasso.with(mContext)
+                        .load(PopMoviesUtils.getPosterPath(mCursor.getString(DetailActivity.INDEX_MOVIE_POSTER_PATH)))
+                        .placeholder(R.drawable.placeholder)
+                        .centerInside()
+                        .fit()
+                        .into(holder.mPosterImageView);
+                holder.mMovieTitle.setText(mCursor.getString(DetailActivity.INDEX_MOVIE_ORIGINAL_TITLE));
+                holder.mMovieOverview.setText(mCursor.getString(DetailActivity.INDEX_MOVIE_OVERVIEW));
+                holder.mMovieVoteAverage.setText(mCursor.getString(DetailActivity.INDEX_MOVIE_VOTE_AVERAGE));
+                holder.mMovieReleaseDate.setText(mCursor.getString(DetailActivity.INDEX_MOVIE_RELEASE_DATE));
+                break;
+            case VIEW_TYPE_TRAILER:
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid view type: value of " + viewType);
+        }
     }
 
     /**
@@ -107,15 +125,12 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
      */
     @Override
     public int getItemCount() {
-        if (mMovieData == null) {
-            return 0;
-        } else {
-            return mMovieData.length;
-        }
+        if (mCursor == null) return 0;
+        return mCursor.getCount();
     }
 
-    public void setMovieData(String[] movieData) {
-        mMovieData = movieData;
+    void swapCursor(Cursor newCursor) {
+        mCursor = newCursor;
         notifyDataSetChanged();
     }
 }

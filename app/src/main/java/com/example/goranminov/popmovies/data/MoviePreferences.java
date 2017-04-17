@@ -15,7 +15,11 @@ public class MoviePreferences {
     public static final String DEFAULT_SORT_BY = "popular";
 
     public static void setSortBy (Context context, String sortBy) {
-
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        String keyForSorting = context.getString(R.string.pref_sort_key);
+        editor.putString(keyForSorting, sortBy);
+        editor.apply();
     }
 
     public static void resetSortBy (Context context) {

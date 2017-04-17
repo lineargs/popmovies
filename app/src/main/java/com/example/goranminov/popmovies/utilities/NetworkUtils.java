@@ -1,8 +1,10 @@
 package com.example.goranminov.popmovies.utilities;
 
+import android.content.Context;
 import android.net.Uri;
 
 import com.example.goranminov.popmovies.BuildConfig;
+import com.example.goranminov.popmovies.data.MoviePreferences;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,8 +22,10 @@ public class NetworkUtils {
 
     private static final String MDB_BASE_URL = "http://api.themoviedb.org/3/movie/";
     private static final String APPID_PARAM = "api_key";
+    private static final String TRAILERS_PATH = "trailers";
 
-    public static URL buildMainUrl(String sortingQuery) {
+    public static URL buildMainUrl(Context context) {
+        String sortingQuery = MoviePreferences.getPreferredSortBy(context);
         Uri builtUri = Uri.parse(MDB_BASE_URL).buildUpon()
                 .appendPath(sortingQuery)
                 .appendQueryParameter(APPID_PARAM, BuildConfig.MOVIE_DATABASE_API_KEY)
@@ -40,6 +44,21 @@ public class NetworkUtils {
     public static URL buildDetailUrl(String movieId) {
         Uri builtUri = Uri.parse(MDB_BASE_URL).buildUpon()
                 .appendPath(movieId)
+                .appendQueryParameter(APPID_PARAM, BuildConfig.MOVIE_DATABASE_API_KEY)
+                .build();
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return url;
+    }
+
+    public static URL buildTrailersUrl (String movieId) {
+        Uri builtUri = Uri.parse(MDB_BASE_URL).buildUpon()
+                .appendPath(movieId)
+                .appendPath(TRAILERS_PATH)
                 .appendQueryParameter(APPID_PARAM, BuildConfig.MOVIE_DATABASE_API_KEY)
                 .build();
         URL url = null;

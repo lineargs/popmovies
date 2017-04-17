@@ -1,7 +1,9 @@
 package com.example.goranminov.popmovies.utilities;
 
+import android.content.ContentValues;
 import android.content.Context;
-import android.util.Log;
+
+import com.example.goranminov.popmovies.data.PopularMoviesContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,7 +13,20 @@ import org.json.JSONObject;
  * Created by goranminov on 02/04/2017.
  */
 
-public class MovieDatabaseJsonUtils {
+public final class MovieDatabaseJsonUtils {
+
+    private static final String MDB_RESULTS = "results";
+    private static final String MDB_ORIGINAL_TITLE = "original_title";
+    private static final String MDB_POSTER_PATH = "poster_path";
+    private static final String MDB_OVERVIEW = "overview";
+    private static final String MDB_VOTE_AVERAGE = "vote_average";
+    private static final String MDB_RELEASE_DATE = "release_date";
+    private static final String MDB_MOVIE_ID = "id";
+    private static final String MDB_BACKDROP_PATH = "backdrop_path";
+
+    private static final String MDB_YOUTUBE_RESULTS = "youtube";
+    private static final String MDB_NAME = "name";
+    private static final String MDB_SOURCE = "source";
 
     /**
      * Take the String representing the complete details in JSON format and
@@ -21,93 +36,58 @@ public class MovieDatabaseJsonUtils {
      *
      * @return Strings needed for the wireframes.
      */
-    public static String[] getMovieIdFromJson(Context context, String stringMovies) throws JSONException {
+    public static ContentValues[] getMovieContentValuesFromJson(Context context, String stringMovies) throws JSONException {
 
-            /*
-             * The name of the JSON objects that we need to extract.
-             */
-        final String MDB_RESULTS = "results";
-        final String MDB_POSTER_PATH = "poster_path";
-        final String MDB_MOVIE_ID = "id";
+        JSONObject movieOverviewJson = new JSONObject(stringMovies);
+        JSONArray jsonMovieOverviewArray = movieOverviewJson.getJSONArray(MDB_RESULTS);
 
-            /*
-             * Object from the returned string and use that Object to create an Array from
-             * the parent MDB_RESULTS.
-             */
-        JSONObject moviesResultJsonObject = new JSONObject(stringMovies);
-        JSONArray moviesResultJsonArray = moviesResultJsonObject.getJSONArray(MDB_RESULTS);
+        ContentValues[] movieOverviewContentValues = new ContentValues[jsonMovieOverviewArray.length()];
 
-            /*
-             * The String Array to be returned.
-             */
-        String[] resultString = new String[moviesResultJsonArray.length()];
-
-        for (int i = 0; i < moviesResultJsonArray.length(); i++) {
+        for (int i = 0; i < jsonMovieOverviewArray.length(); i++) {
+            double voteAverage;
+            String releaseDate;
             String posterPath;
-            String movieId;
+            String backdropPath;
+            String originalTitle;
+            int movieId;
+            String overview;
 
-                /*
-                 * Get the JSONObject.
-                 */
-            JSONObject moviesResults = moviesResultJsonArray.getJSONObject(i);
-            movieId = moviesResults.getString(MDB_MOVIE_ID);
-            posterPath = moviesResults.getString(MDB_POSTER_PATH);
-
-                /* This is implemented this way so that will be easy when we will need
-                 * to extract the data later.
-                 */
-            resultString[i] = posterPath + "£" + movieId;
+            JSONObject movieJsonObject = jsonMovieOverviewArray.getJSONObject(i);
+            voteAverage = movieJsonObject.getDouble(MDB_VOTE_AVERAGE);
+            releaseDate = PopMoviesUtils.getNormalizedReleasedDate(movieJsonObject.getString(MDB_RELEASE_DATE));
+            posterPath = movieJsonObject.getString(MDB_POSTER_PATH);
+            backdropPath = movieJsonObject.getString(MDB_BACKDROP_PATH);
+            originalTitle = movieJsonObject.getString(MDB_ORIGINAL_TITLE);
+            movieId = movieJsonObject.getInt(MDB_MOVIE_ID);
+            overview = movieJsonObject.getString(MDB_OVERVIEW);
+            ContentValues movieOverviewValues = new ContentValues();
+            movieOverviewValues.put(PopularMoviesContract.MovieOverview.COLUMN_BACKDROP_PATH, backdropPath);
+            movieOverviewValues.put(PopularMoviesContract.MovieOverview.COLUMN_MOVIE_ID, movieId);
+            movieOverviewValues.put(PopularMoviesContract.MovieOverview.COLUMN_ORIGINAL_TITLE, originalTitle);
+            movieOverviewValues.put(PopularMoviesContract.MovieOverview.COLUMN_OVERVIEW, overview);
+            movieOverviewValues.put(PopularMoviesContract.MovieOverview.COLUMN_POSTER_PATH, posterPath);
+            movieOverviewValues.put(PopularMoviesContract.MovieOverview.COLUMN_RELEASE_DATE, releaseDate);
+            movieOverviewValues.put(PopularMoviesContract.MovieOverview.COLUMN_VOTE_AVERAGE, voteAverage);
+            movieOverviewContentValues[i] = movieOverviewValues;
         }
-        return resultString;
+        return movieOverviewContentValues;
     }
 
-    public static String[] getMovieDetailFromJson (Context context, String stringMovies) throws JSONException{
-        PopMoviesUtils popMoviesUtils = new PopMoviesUtils();
-        /*
-             * The names of the JSON objects that we need to extract.
-             */
-        final String MDB_ORIGINAL_TITLE = "original_title";
-        final String MDB_POSTER_PATH = "poster_path";
-        final String MDB_OVERVIEW = "overview";
-        final String MDB_VOTE_AVERAGE = "vote_average";
-        final String MDB_RELEASE_DATE = "release_date";
-        final String MDB_MOVIE_ID = "id";
+    public static String[] getMovieTrailersFromJson (Context context, String stringMovie) throws JSONException {
 
-            /*
-             * Object from the returned string and use that Object to create an Array from
-             * the parent MDB_RESULTS.
-             */
-        JSONObject moviesResultJsonObject = new JSONObject(stringMovies);
+        JSONObject movieResultsJsonObject = new JSONObject(stringMovie);
+        JSONArray movieResultsJsonArray = movieResultsJsonObject.getJSONArray(MDB_YOUTUBE_RESULTS);
+        String[] resultString = new String[movieResultsJsonArray.length()];
 
-            /*
-             * The String Array to be returned.
-             */
-        String[] resultString = new String[1];
+        for (int i = 0; i < movieResultsJsonArray.length(); i++) {
+            String source;
+            String name;
 
-            String originalTitle;
-            String posterPath;
-            String overview;
-            String voteAverage;
-            String releaseDate;
-            String movieId;
-
-                /*
-                 * Get the JSONObject.
-                 */
-            movieId = moviesResultJsonObject.getString(MDB_MOVIE_ID);
-            originalTitle = moviesResultJsonObject.getString(MDB_ORIGINAL_TITLE);
-            posterPath = moviesResultJsonObject.getString(MDB_POSTER_PATH);
-            overview = moviesResultJsonObject.getString(MDB_OVERVIEW);
-            voteAverage = moviesResultJsonObject.getString(MDB_VOTE_AVERAGE);
-            releaseDate = PopMoviesUtils.getNormalizedReleasedDate(
-                    moviesResultJsonObject.getString(MDB_RELEASE_DATE));
-
-                /* This is implemented this way so that will be easy when we will need
-                 * to extract the data later.
-                 */
-            resultString[0] = posterPath + "£" + movieId + "!" + originalTitle + "@"
-                    + overview + "#" + voteAverage +
-                    "$" + releaseDate;
+            JSONObject movieResults = movieResultsJsonArray.getJSONObject(i);
+                name = movieResults.getString(MDB_NAME);
+                source = movieResults.getString(MDB_SOURCE);
+                resultString[i] = name + "£" + source;
+            }
         return resultString;
     }
 }

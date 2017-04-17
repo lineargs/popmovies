@@ -1,30 +1,25 @@
 package com.example.goranminov.popmovies;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.database.Cursor;
+import android.net.Uri;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
-import com.example.goranminov.popmovies.data.MoviePreferences;
-import com.example.goranminov.popmovies.utilities.MovieDatabaseJsonUtils;
-import com.example.goranminov.popmovies.utilities.NetworkUtils;
-
-import java.net.URL;
+import com.example.goranminov.popmovies.data.PopularMoviesContract;
+import com.example.goranminov.popmovies.sync.MovieSyncUtils;
 
 /*
  * I have followed the examples from the Sunshine app that was provided during my Nanodegree course.
@@ -32,14 +27,20 @@ import java.net.URL;
  * as well as the AsyncTask class from the Sunshine app.
  */
 public class MainActivity extends AppCompatActivity implements MoviesPosterAdapter.MovieAdapterOnClickHandler,
-        LoaderManager.LoaderCallbacks<String[]>,
-        SharedPreferences.OnSharedPreferenceChangeListener {
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     private RecyclerView mRecyclerView;
     private MoviesPosterAdapter mMovieAdapter;
     private ProgressBar mLoadingData;
     private static final int MOVIE_DATABASE_LOADER_ID = 29;
-    private static boolean PREFERENCE_HAVE_BEEN_UPDATED = false;
+    private int mPosition = RecyclerView.NO_POSITION;
+
+    public static final String[] MAIN_PROJECTION = {
+            PopularMoviesContract.MovieOverview.COLUMN_POSTER_PATH,
+            PopularMoviesContract.MovieOverview.COLUMN_MOVIE_ID
+    };
+    public static final int INDEX_MOVIE_POSTER_PATH = 0;
+    public static final int INDEX_MOVIE_ID = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,12 +72,11 @@ public class MainActivity extends AppCompatActivity implements MoviesPosterAdapt
         mMovieAdapter = new MoviesPosterAdapter(this, this);
         mRecyclerView.setAdapter(mMovieAdapter);
 
-        LoaderManager.LoaderCallbacks<String[]> callbacks = MainActivity.this;
-        Bundle bundle = null;
-        getSupportLoaderManager().initLoader(MOVIE_DATABASE_LOADER_ID, bundle, callbacks);
+        showLoading();
 
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener(this);
+        getSupportLoaderManager().initLoader(MOVIE_DATABASE_LOADER_ID, null, this);
+
+        MovieSyncUtils.startImmediateSync(this);
     }
 
     private int numberOfColumns() {
@@ -91,111 +91,62 @@ public class MainActivity extends AppCompatActivity implements MoviesPosterAdapt
         return nColumns;
     }
 
-    private boolean isOnline() {
-        ConnectivityManager connectivityManager = (ConnectivityManager)
-                getSystemService(this.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        return networkInfo != null && networkInfo.isConnectedOrConnecting();
-    }
-
-    /*
-     * Method used to set the error message as visible and the RecyclerView
-     * as invisible.
-     */
-    private void showErrorData() {
-        Toast.makeText(MainActivity.this, R.string.error_message_display, Toast.LENGTH_LONG).show();
-    }
-
-    private void notOnlineData() {
-        Toast.makeText(MainActivity.this, R.string.not_online_error_message_display, Toast.LENGTH_LONG).show();
-    }
-
     /**
      * Override the onClick method so we will be able to handle the RecyclerView item clicks.
      *
-     * @param selectedMovie The information for the movie that was clicked.
+     * @param id The information for the movie that was clicked.
      */
     @Override
-    public void onClick(String selectedMovie) {
+    public void onClick(long id) {
         Intent intent = new Intent(this, DetailActivity.class);
-        intent.putExtra(Intent.EXTRA_TEXT, selectedMovie);
+        Uri uri = PopularMoviesContract.MovieOverview.buildMovieUriWithId(id);
+        intent.setData(uri);
         startActivity(intent);
     }
 
     @Override
-    public Loader<String[]> onCreateLoader(int id, final Bundle args) {
+    public Loader<Cursor> onCreateLoader(int loaderId, Bundle bundle) {
 
-        return new AsyncTaskLoader<String[]>(this) {
+        switch (loaderId) {
+            case MOVIE_DATABASE_LOADER_ID:
+                Uri movieQueryUri = PopularMoviesContract.MovieOverview.CONTENT_URI;
 
-            String[] mMovieData = null;
-
-            @Override
-            protected void onStartLoading() {
-                if (mMovieData != null) {
-                    deliverResult(mMovieData);
-                } else if (isOnline()) {
-                    mLoadingData.setVisibility(View.VISIBLE);
-                    forceLoad();
-                } else {
-                    notOnlineData();
-                }
-            }
-
-            @Override
-            public String[] loadInBackground() {
-                String sortingQuery = MoviePreferences.getPreferredSortBy(MainActivity.this);
-                URL url = NetworkUtils.buildMainUrl(sortingQuery);
-                try {
-                    String moviesJsonString = NetworkUtils.getMainResponseFromHttpUrl(url);
-                    String[] movieData = MovieDatabaseJsonUtils.getMovieIdFromJson(MainActivity.this,
-                            moviesJsonString);
-                    return movieData;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
-
-            public void deliverResult(String[] data) {
-                mMovieData = data;
-                super.deliverResult(data);
-            }
-        };
+                return new CursorLoader(this,
+                        movieQueryUri,
+                        MAIN_PROJECTION,
+                        null,
+                        null,
+                        null);
+            default:
+                throw new RuntimeException("Loader not implemented: " + loaderId);
+        }
     }
 
     @Override
-    public void onLoadFinished(Loader<String[]> loader, String[] data) {
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mMovieAdapter.swapCursor(data);
+        if (mPosition == RecyclerView.NO_POSITION) mPosition = 0;
+        mRecyclerView.smoothScrollToPosition(mPosition);
+        if (data.getCount() != 0) showMovieDataView();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mMovieAdapter.swapCursor(null);
+    }
+
+    private void showMovieDataView() {
+        /* First, hide the loading indicator */
         mLoadingData.setVisibility(View.INVISIBLE);
-        mMovieAdapter.setMoviesData(data);
-        if (data == null) {
-            showErrorData();
-            mMovieAdapter.setMoviesData(data);
-        }
+        /* Finally, make sure the weather data is visible */
+        mRecyclerView.setVisibility(View.VISIBLE);
     }
 
-    @Override
-    public void onLoaderReset(Loader<String[]> loader) {
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (PREFERENCE_HAVE_BEEN_UPDATED) {
-            getSupportLoaderManager().restartLoader(MOVIE_DATABASE_LOADER_ID, null, this);
-            PREFERENCE_HAVE_BEEN_UPDATED = false;
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        PREFERENCE_HAVE_BEEN_UPDATED = true;
+    private void showLoading() {
+        /* Then, hide the weather data */
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        /* Finally, show the loading indicator */
+        mLoadingData.setVisibility(View.VISIBLE);
     }
 
     @Override
