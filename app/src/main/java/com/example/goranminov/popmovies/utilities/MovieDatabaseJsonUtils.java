@@ -2,12 +2,15 @@ package com.example.goranminov.popmovies.utilities;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.net.NetworkInfo;
 
 import com.example.goranminov.popmovies.data.PopularMoviesContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.net.URL;
 
 /**
  * Created by goranminov on 02/04/2017.

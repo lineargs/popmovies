@@ -21,7 +21,6 @@
         android:id="@+id/trailer_icon"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        app:srcCompat="@drawable/ic_play_arrow_black_24px"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginBottom="8dp"
@@ -30,10 +29,10 @@
         android:layout_marginTop="0dp" />
 
     <TextView
-        android:id="@+id/trailer_textView"
+        android:id="@+id/trailer_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Trailer"
+        tools:text="Trailer"
         android:layout_marginBottom="0dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintTop_toTopOf="@+id/guideline"

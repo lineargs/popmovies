@@ -48,7 +48,7 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_detail);
+        setContentView(R.layout.activity_movie);
         mUri = getIntent().getData();
 
         if (mUri == null) {

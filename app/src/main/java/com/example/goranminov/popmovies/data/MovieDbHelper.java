@@ -31,18 +31,18 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                         PopularMoviesContract.MovieOverview.COLUMN_BACKDROP_PATH + " TEXT NOT NULL, " +
                         "UNIQUE (" + PopularMoviesContract.MovieOverview.COLUMN_MOVIE_ID + ") ON CONFLICT REPLACE);";
 
-        final String SQL_CREATE_MOVIE_TRAILER_TABLE =
-                "CREATE TABLE " + PopularMoviesContract.MovieTrailer.TABLE_NAME + " (" +
-                        PopularMoviesContract.MovieTrailer._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        PopularMoviesContract.MovieTrailer.COLUMN_MOVIE_ID + " INTEGER NOT NULL, " +
-                        PopularMoviesContract.MovieTrailer.COLUMN_NAME + " TEXT NOT NULL, " +
-                        PopularMoviesContract.MovieTrailer.COLUMN_SOURCE + " TEXT NOT NULL, " +
-                        PopularMoviesContract.MovieTrailer.COLUMN_TYPE + " TEXT NOT NULL, " +
-                        "FOREIGN KEY (" + PopularMoviesContract.MovieTrailer.COLUMN_MOVIE_ID +
-                        ") REFERENCES " + PopularMoviesContract.MovieOverview.COLUMN_MOVIE_ID + ");";
+//        final String SQL_CREATE_MOVIE_TRAILER_TABLE =
+//                "CREATE TABLE " + PopularMoviesContract.MovieTrailer.TABLE_NAME + " (" +
+//                        PopularMoviesContract.MovieTrailer._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+//                        PopularMoviesContract.MovieTrailer.COLUMN_MOVIE_ID + " INTEGER NOT NULL, " +
+//                        PopularMoviesContract.MovieTrailer.COLUMN_NAME + " TEXT NOT NULL, " +
+//                        PopularMoviesContract.MovieTrailer.COLUMN_SOURCE + " TEXT NOT NULL, " +
+//                        PopularMoviesContract.MovieTrailer.COLUMN_TYPE + " TEXT NOT NULL, " +
+//                        "FOREIGN KEY (" + PopularMoviesContract.MovieTrailer.COLUMN_MOVIE_ID +
+//                        ") REFERENCES " + PopularMoviesContract.MovieOverview.COLUMN_MOVIE_ID + ");";
 
         db.execSQL(SQL_CREATE_MOVIE_OVERVIEW_TABLE);
-        db.execSQL(SQL_CREATE_MOVIE_TRAILER_TABLE);
+//        db.execSQL(SQL_CREATE_MOVIE_TRAILER_TABLE);
 
     }
 

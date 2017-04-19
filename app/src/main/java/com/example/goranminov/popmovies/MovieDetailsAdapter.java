@@ -40,6 +40,8 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
         final TextView mMovieOverview;
         final TextView mMovieVoteAverage;
         final TextView mMovieReleaseDate;
+        final ImageView mMovieTrailerIcon;
+        final TextView mMovieTrailer;
 
         public MovieAdapterViewHolder(View view) {
             super(view);
@@ -48,6 +50,8 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
             mMovieOverview = (TextView) view.findViewById(R.id.movie_overview);
             mMovieVoteAverage = (TextView) view.findViewById(R.id.movie_vote_average);
             mMovieReleaseDate = (TextView) view.findViewById(R.id.movie_release_date);
+            mMovieTrailerIcon = (ImageView) view.findViewById(R.id.trailer_icon);
+            mMovieTrailer = (TextView) view.findViewById(R.id.trailer_text_view);
         }
     }
 
@@ -111,6 +115,8 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
                 holder.mMovieReleaseDate.setText(mCursor.getString(DetailActivity.INDEX_MOVIE_RELEASE_DATE));
                 break;
             case VIEW_TYPE_TRAILER:
+                holder.mMovieTrailerIcon.setImageResource(R.drawable.ic_play_arrow_black_24px);
+                holder.mMovieTrailer.setText("Trailer");
                 break;
 
             default:
@@ -127,6 +133,15 @@ public class MovieDetailsAdapter extends RecyclerView.Adapter<MovieDetailsAdapte
     public int getItemCount() {
         if (mCursor == null) return 0;
         return mCursor.getCount();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (mUseOverviewLayout || position == 0) {
+            return VIEW_TYPE_OVERVIEW;
+        } else {
+            return VIEW_TYPE_TRAILER;
+        }
     }
 
     void swapCursor(Cursor newCursor) {
