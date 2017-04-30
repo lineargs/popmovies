@@ -4,4 +4,9 @@
     <color name="colorPrimaryDark">@android:color/black</color>
     <color name="colorAccent">#009688</color>
     <color name="movie_vote_average">#646464</color>
+
+    <color name="activated">#E0E0E0</color>
+    <color name="button_green">#009688</color>
+    <color name="button_red">#D50000</color>
+    <color name="white">#FFFFFF</color>
 </resources>

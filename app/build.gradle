@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.example.goranminov.popmovies"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -20,8 +20,14 @@ android {
     buildTypes.each {
         it.buildConfigField 'String', 'MOVIE_DATABASE_API_KEY', MyMovieDatabaseApiKey
     }
+<<<<<<< HEAD
     dataBinding.enabled = true
     android.defaultConfig.vectorDrawables.useSupportLibrary = true
+||||||| merged common ancestors
+    dataBinding.enabled = true
+=======
+    android.defaultConfig.vectorDrawables.useSupportLibrary = true
+>>>>>>> udacity
 }
 
 dependencies {
@@ -37,7 +43,7 @@ dependencies {
     compile 'com.firebase:firebase-jobdispatcher:0.5.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.jakewharton:butterknife:8.4.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    compile 'com.jakewharton:butterknife:8.5.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
     testCompile 'junit:junit:4.12'
 }

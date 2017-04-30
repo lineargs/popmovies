@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
+<<<<<<< HEAD
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+||||||| merged common ancestors
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+=======
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/movie_detail_recyclerviews"
+    android:layout_width="match_parent"
+>>>>>>> udacity
     android:layout_height="match_parent"
+<<<<<<< HEAD
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_detail">
+||||||| merged common ancestors
+    android:id="@+id/movie_detail_recyclerview">
+=======
+    android:orientation="vertical">
+>>>>>>> udacity
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerview_movie_details"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerview_movie_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
 </android.support.v4.widget.NestedScrollView>

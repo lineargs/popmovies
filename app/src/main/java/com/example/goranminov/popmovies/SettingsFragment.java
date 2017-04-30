@@ -1,5 +1,7 @@
 package com.example.goranminov.popmovies;
 
+import android.app.Activity;
+import android.app.LoaderManager;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.preference.CheckBoxPreference;
@@ -7,6 +9,11 @@ import android.support.v7.preference.ListPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceScreen;
+import android.util.Log;
+
+import com.example.goranminov.popmovies.data.MovieContract;
+import com.example.goranminov.popmovies.data.MoviePreferences;
+import com.example.goranminov.popmovies.syncMovie.MovieSyncUtils;
 
 /**
  * Created by goranminov on 02/04/2017.
